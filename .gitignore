@@ -1,0 +1,53 @@
+# --- Common ---
+node_modules/
+.env
+.env.*
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# --- OS-specific ---
+.DS_Store
+Thumbs.db
+
+# --- Editor/IDE ---
+.vscode/
+.idea/
+*.swp
+
+# --- React (Frontend) ---
+frontend/build/
+frontend/dist/
+frontend/.next/
+frontend/.cache/
+frontend/.turbo/
+frontend/public/env.js
+
+# --- Node.js (Backend) ---
+backend/node_modules/
+backend/logs/
+backend/tmp/
+backend/dist/
+backend/build/
+backend/.cache/
+backend/coverage/
+backend/.nyc_output/
+backend/uploads/
+
+# --- Optional: if using TypeScript ---
+**/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# --- Optional: if using testing tools like Jest ---
+coverage/
+jest-cache/
+jest-coverage/
+
+# --- Optional: PM2 or similar process manager logs ---
+pids/
+*.pid
+*.seed
+*.pid.lock
