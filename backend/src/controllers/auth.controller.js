@@ -129,3 +129,43 @@ export const profileUpdate = async(req, res) => {
         });
     }
 }
+
+export const checkAuth = async (req, res) => {
+    try{
+        res.status(200).json({
+            id: req.user._id,
+            fullName: req.user.fullName,
+            email: req.user.email,
+            profilePic: req.user.profilePic,
+        })
+    }
+    catch(err) {
+        console.log('Error in checkAuth controller', err);
+        res.status(500).json({
+            message: 'Internal server error'
+        })
+    }
+}
+
+export const updatePassword = async (req, res) => {
+    const {password, oldPassword} = req.body;
+    try {
+        const userId = req.user._id;
+        const currentUser = await User.findOne({_id: userId});
+        if(!currentUser) return res.status(404).json({message: "User not found"});  
+        const match = await bcrypt.compare(oldPassword, currentUser.hashedPassword);
+        if(!match) {
+            res.status(401).json({message: 'Invalid Password'})
+        }
+        updatedUse = await User.findByIdAndUpdate(userId,{}, {new:true})
+
+
+
+
+    }
+    catch(err){
+        console.log('Error in updatePassword controller:', err)
+        return res.status(500).json({message: "Internal Server Error"});
+
+    }
+}
