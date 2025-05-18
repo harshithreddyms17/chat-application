@@ -1,6 +1,5 @@
 import { generateToken } from "../utils/generateToken.js";
 import User from "../models/auth.model.js";
-
 import cloudinary from "../lib/cloudinary.js";
 import { hashedPasswordUtil, passwordMatchUtil } from "../utils/hashedPasswordUtils.js";
 import { formatUserResponse } from "../utils/utils.js";
@@ -65,7 +64,7 @@ export const signup = async (req, res) => {
 
 export const logout = (req, res) => {
     try{
-        res.clearCookie('token');
+        res.clearCookie('jwt');
         return res.status(200).json({
             message: "Logged out successfully"
         });
