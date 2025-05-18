@@ -1,7 +1,9 @@
-import { generateToken } from "../lib/utils.js";
+import { generateToken } from "../utils/generateToken.js";
 import User from "../models/auth.model.js";
-import bcrypt from 'bcryptjs';
+
 import cloudinary from "../lib/cloudinary.js";
+import { hashedPasswordUtil, passwordMatchUtil } from "../utils/hashedPasswordUtils.js";
+import { formatUserResponse } from "../utils/utils.js";
 
 export const login = async (req, res) => {
     const {email, password} = req.body;
@@ -10,18 +12,13 @@ export const login = async (req, res) => {
         const user = await User.findOne({'email': email});
         if(!user) return res.status(404).json({message: "User not found"});
 
-        const match = await bcrypt.compare(password, user.password);
+        const match = await passwordMatchUtil(password, user.password);
 
         if(!match) return res.status(401).json({message: "Invalid credentials"});
 
         generateToken(user._id, res);
 
-        return res.status(200).json({
-            id: newUser._id,
-            fullName: newUser.fullName,
-            email: newUser.email,
-            profilePic: newUser.profilePic,
-        })
+        return res.status(200).json(formatUserResponse(user));
     }
     catch(err){
         console.log('Error in login controller', err);
@@ -39,8 +36,7 @@ export const signup = async (req, res) => {
         const user = await User.findOne({email});
         if (user) return res.status(409).json({message: 'User already exists'});
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await hashedPasswordUtil(password);
 
         const newUser = new User({
             fullName:fullName,
@@ -52,12 +48,7 @@ export const signup = async (req, res) => {
             generateToken(newUser._id, res);
             await newUser.save();
 
-            return res.status(201).json({
-                id: newUser._id,
-                fullName: newUser.fullName,
-                email: newUser.email,
-                profilePic: newUser.profilePic,
-            })
+            return res.status(201).json(formatUserResponse(newUser));
         } else {
             return res.status(400).json({
                 message: 'User not created'
@@ -115,12 +106,7 @@ export const profileUpdate = async(req, res) => {
                 message: "User not found"
             });
 
-        return res.status(200).json({
-            id: updatedUser._id,
-            fullName: updatedUser.fullName,
-            email: updatedUser.email,
-            profilePic: updatedUser.profilePic,
-        });
+        return res.status(200).json(formatUserResponse(updatedUser));
     }
     catch(err){
         console.log('Error in profile update controller', err);
@@ -132,12 +118,7 @@ export const profileUpdate = async(req, res) => {
 
 export const checkAuth = async (req, res) => {
     try{
-        res.status(200).json({
-            id: req.user._id,
-            fullName: req.user.fullName,
-            email: req.user.email,
-            profilePic: req.user.profilePic,
-        })
+        res.status(200).json(formatUserResponse(req.user));
     }
     catch(err) {
         console.log('Error in checkAuth controller', err);
@@ -151,21 +132,28 @@ export const updatePassword = async (req, res) => {
     const {password, oldPassword} = req.body;
     try {
         const userId = req.user._id;
+
         const currentUser = await User.findOne({_id: userId});
-        if(!currentUser) return res.status(404).json({message: "User not found"});  
-        const match = await bcrypt.compare(oldPassword, currentUser.hashedPassword);
+        if(!currentUser) return res.status(404).json({message: "User not found"}); 
+
+        const match = await passwordMatchUtil(oldPassword, currentUser.password);
+
         if(!match) {
             res.status(401).json({message: 'Invalid Password'})
         }
-        updatedUse = await User.findByIdAndUpdate(userId,{}, {new:true})
 
+        const hashedPassword = await hashedPasswordUtil(password);
+        updatedUser = await User.findByIdAndUpdate(userId,{password: hashedPassword}, {new:true});
 
+        if(!updatedUser) return res.status(404).json(
+        {
+            message: "User not found"
+        });
 
-
+        return res.status(200).json(formatUserResponse(updatedUser));
     }
     catch(err){
         console.log('Error in updatePassword controller:', err)
         return res.status(500).json({message: "Internal Server Error"});
-
     }
 }
