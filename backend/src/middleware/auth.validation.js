@@ -23,7 +23,6 @@ const signupValidation = [
     .normalizeEmail(),
   passwordValidation,
   fullNameValidation,
-  
 ];
 
 const validate = (req, res, next) => {
