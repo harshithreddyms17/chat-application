@@ -30,6 +30,7 @@ export const login = async (req, res) => {
 export const signup = async (req, res) => {
     // res.send('Login Route');
     const {fullName, email, password} = req.body;
+    //signup
     
     try{
         const user = await User.findOne({email});
